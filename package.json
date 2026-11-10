@@ -1,0 +1,14 @@
+{
+  "name": "chatgpt-literary-universe",
+  "private": true,
+  "description": "Literary Universe plugin for ChatGPT. Only the package files are installed; this file exists for the checks.",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": { "test": "node --test test/*.test.mjs" },
+  "devDependencies": {
+    "@literary-universe/sdk": "git+https://github.com/LiteraryUniverse/sdk-typescript.git#4a677abaeeef9738ccd3dcae2f1f1a1f29ae6ba5",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
+  }
+}
