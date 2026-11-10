@@ -1,0 +1,28 @@
+{
+	"$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+	"mcpServers": {
+		"literary-universe": {
+			"type": "streamable-http",
+			"url": "https://literaryuniverse.com/mcp?tools=list-stories,get-story,list-chapters,get-chapter-draft,list-universes,get-universe,list-encyclopedia-entries,get-encyclopedia-entry,list-series,get-identity,create-encyclopedia-entry,update-encyclopedia-entry,translate-encyclopedia-entry,search-lu-docs,fetch-lu-docs,get-story-creation-options,create-story,create-chapter,save-chapter-draft,assistant",
+			"extensions": {
+				"com.openai": {
+					"auth": {
+						"type": "oauth",
+						"client": {
+							"mode": "dcr"
+						},
+						"baseScopes": [
+							"story:read",
+							"story:write",
+							"universe:read",
+							"universe:write",
+							"universe:translate"
+						],
+						"defaultScopes": [],
+						"resource": "https://literaryuniverse.com/mcp"
+					}
+				}
+			}
+		}
+	}
+}
