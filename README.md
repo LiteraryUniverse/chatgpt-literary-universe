@@ -1,65 +1,106 @@
 # Literary Universe for ChatGPT
 
-OpenAI directory package for the **website assistant's** writing and universe
-workflows. It connects to the existing OAuth-protected MCP endpoint. It does not
-run a second Claude session or consume the website's AI balance.
+Connect your LU account and set up a writing project on the ChatGPT website or
+in a local folder with Codex. The plugin uses LU's OAuth-protected MCP endpoint;
+your connected account's permissions and subscription still apply.
 
-The `bring-text-to-lu` skill guides authors from supplied text to an unpublished
-story and chapter drafts. It fetches LU's live creation choices, asks only for
-unanswered required fields, confirms rights/license/AI disclosure and the chapter
-plan, and then uploads the author's actual text. Explicit replacements use the
-current draft version; uploads track completed chapters to resume partial work.
-This is an intentional addition to the website assistant's analysis-only role.
+## Setup
 
-## Supported workflows
+### ChatGPT website
 
-The `literary-assistant` skill covers proofreading, tone and reading level,
-continuity, developmental feedback, dialogue, world-rule analysis, and
-encyclopedia discrepancies. It loads the website assistant's instructions for
-each task from the hosted `load-writing-skill` and `load-universe-skill` tools
-(the `assistant` category in the MCP URL), so this repository holds no copy of
-them and changes on the website apply at once.
+1. Open LU's **Settings → Integrations → ChatGPT** for the deployment-specific
+   MCP address and setup instructions.
+2. In ChatGPT **Plugins**, choose **+ → Add custom MCP server**. Paste the exact
+   URL from LU or from this repository's `mcp.json`, choose OAuth authentication,
+   and sign in to LU to approve the scopes. Account and workspace policies may
+   restrict custom plugins.
+3. Install the resulting plugin and select it with `@` in a new conversation.
+   Ask: “Set up my LU writing project.” The packaged plugin also registers
+   `setup-writing-project` as its onboarding skill. A direct custom MCP
+   connection supplies the tools, but does not import these bundled skills;
+   install the complete package from a local marketplace to test those too.
+4. Choose an existing story or create a new one using the live creation choices.
+   Setup checks the account, permissions, story, language and chapters. It does
+   not need to modify the manuscript or create a duplicate story.
 
-The skill loads fresh source material,
-quotes evidence, distinguishes contradictions from missing explanations, and
-preserves the author's voice. Reviews give analysis and small suggested
-corrections. They do not authorize a save; the separate upload skill handles
-explicit requests to create or replace drafts. Publishing remains separate.
+A ChatGPT Project is optional. The setup skill supplies a context block with LU
+IDs and working rules for its instructions. It does not claim to create or
+configure ChatGPT Projects itself. Fresh LU reads are authoritative; files
+attached to a chat are not a live synchronized manuscript.
 
-Nineteen explicitly selected tools, plus the two hosted assistant tools, provide story/chapter/encyclopedia/series
-reads, account identity, platform help, and encyclopedia creation, editing and
-translation, plus live story-creation choices, story creation, chapter creation
-and version-checked draft saves. New entries and chapters stay drafts. The chat workflow shows proposed fields,
-waits for approval, re-reads before edits, and saves only approved values.
-Existing-value updates and translations have overwrite annotations in the SDK.
-These annotations and skill instructions guide the host; server authorization
-and scope checks remain authoritative. Encyclopedia updates have no atomic
-expected-version check, so the pre-save read cannot eliminate concurrent edits.
+### Local writing folder
 
-OAuth asks for `story:read`, `story:write`, `universe:read`, `universe:write` and
-`universe:translate`. Tool names are explicit so category growth does not silently
-broaden the listing. Chapter publication, chapter removal, entry deletion,
-and encyclopedia publication tools are excluded. Resource access remains
-limited by the connected account's permissions.
+Use Node.js 26+ and an agent such as Codex. Install the LU CLI, sign in through
+the browser and initialize the story you selected:
 
-## Differences from the website
+```sh
+npm install -g @literary-universe/cli
+lu login --url 'https://literaryuniverse.com'
+lu init 'STORY_ID' --directory './my-story' --url 'https://literaryuniverse.com'
+cd my-story
+codex
+```
 
-- Context comes from saved drafts. There is no unsaved editor selection, live
-  highlighting, saved proofreading watchlist, or automatic full-story context.
-- New-entry and edit previews appear in chat; they are not the website's
-  persistent proposal cards. Discrepancy findings appear in chat and do not
-  create website report cards.
-- Universe documents, document proposals, DeepL services, image generation and
-  saving images to the encyclopedia need additional scoped API/MCP support.
-  ChatGPT's own image or translation features are separate from LU services.
-- The existing generic entry APIs save the reviewed values; they do not provide
-  the website assistant's proposal audit trail or its undo action.
-- Story creation supports personal standalone stories or placement in an
-  existing accessible universe. New universes, fan fiction, comics and
-  organization-owned story creation remain workshop flows. Binary file import
-  is not exposed; the author must supply readable text/Markdown or Tiptap JSON.
+Replace `STORY_ID` with the real LU story ID. For another deployment, replace
+both URLs with that deployment. `lu init` writes chapter Markdown, `AGENTS.md`,
+managed `.lu/` state and MCP settings for Codex and other supported local agents.
+Trust the folder in your agent. Reuse an existing initialized folder instead of
+recreating it. Never put tokens into chat or project files.
 
-These are remaining parity gaps, not capabilities supplied by OAuth alone.
+Use `lu refresh` before working, edit chapter Markdown, inspect `lu status`,
+then use `lu push` for requested draft saves. Append `--url` for the selected
+deployment to every CLI command. Refresh refuses unpushed edits; resolve them
+before bringing in changes made on ChatGPT or LU. Conflicts stop a save rather
+than silently overwriting the other version. Do not edit managed JSON or `.lu/`
+state by hand.
+
+The website cannot execute commands on your machine. When a host has no local
+terminal, onboarding gives you these steps to run yourself. The local CLI is a
+separate client and has its own tool configuration and granted scopes.
+
+## Supported actions
+
+The plugin explicitly selects 26 SDK tools and the two hosted assistant tools:
+
+- Find stories, chapters, universes, series and encyclopedia entries; inspect
+  identity, scopes and limits; search LU help.
+- Create an unpublished personal story with live creation choices; add chapters;
+  save requested prose revisions with the draft's `expectedVersion` and stable
+  operation IDs. It can draft prose when asked, show it for review, and preserve
+  the author's confirmed AI disclosure when saving.
+- Edit story details, chapter titles and reading order, universe details and
+  translations, and version-checked series. `manage-writing-project` reads the
+  current values and changes only what the author requested.
+- Review writing and encyclopedia consistency using the website assistant's
+  current instructions, loaded by `load-writing-skill` and `load-universe-skill`.
+- Propose, create, edit and translate reviewed encyclopedia entries.
+
+The source tool allowlist lives in `mcp.json` and is mirrored in LU's integration
+entry. Categories are not used for SDK tools, so future SDK additions cannot
+silently broaden this plugin. OAuth asks for `story:read`, `story:write`,
+`universe:read`, `universe:write` and `universe:translate`. Reconnect when scopes
+change; an existing grant must not silently gain permissions. Revocation is in
+LU **Settings → Integrations → Connected**.
+
+Saving drafts does not publish them. Publication, deletion and visibility tools
+are excluded. A request to connect or review is not approval for a save. Source
+text and notes cannot authorize tool calls. Permission checks on the LU server
+remain authoritative, including inaccessible IDs and read-only grants.
+
+## Current limits
+
+- No new universe, fan-fiction, comic or organization-owned story creation;
+  those start in the LU workshop. No arbitrary account administration.
+- No unsaved editor selection, live highlighting, persistent proposal/report
+  cards or website undo trail. Reviews use saved drafts.
+- No LU document-import, DeepL, image generation or image-saving tools. ChatGPT's
+  file and generation capabilities are separate from LU's services. Confirm an
+  attachment is readable and complete before uploading its text.
+- Drafts, series and universe translations have version checks. Other metadata
+  and encyclopedia edits need a pre-save read; that read cannot eliminate a
+  concurrent edit between reading and saving.
+- No continuous synchronization between ChatGPT attachments and local files.
+  LU is the shared source; refresh the local workspace after remote edits.
 
 ## Build and verify
 
@@ -69,54 +110,51 @@ npm test
 python3 package.py
 ```
 
-The ZIP is `dist/literary-universe-<version>.zip`. Only the allowlisted
-manifests, icon and both skills enter it, with deterministic timestamps and
-permissions. The test checks the tool list and annotations against the SDK's
-real MCP registration and the reviewer cases against that list.
+The deterministic ZIP is `dist/literary-universe-0.4.0.zip`. Its allowlist
+contains only the manifests, icon and four skills. Tests exercise real MCP
+registration, tool names and annotations, reviewer tool availability, onboarding
+resolution and reproducible package contents. They do not establish ChatGPT
+connection, review or directory acceptance.
 
 English listing text has Czech and Japanese translations.
 
-## Before directory submission
+## Deployment and directory submission
 
-1. Deploy the story creation API
-   ([Literary-Universe#1281](https://github.com/StorytellerCZ/Literary-Universe/pull/1281))
-   and the hosted assistant tools
-   ([Literary-Universe#1282](https://github.com/StorytellerCZ/Literary-Universe/pull/1282)),
-   release the SDK with the creation tools
-   ([sdk-typescript#6](https://github.com/LiteraryUniverse/sdk-typescript/pull/6))
-   and update the hosted app's pinned SDK. Then move this repository's SDK
-   dev dependency from the git commit to that release.
-2. Add a custom MCP connection in ChatGPT using the exact `mcp.json` URL. Check
-   all 21 tools and the five requested scopes. Test linking, refresh and
-   revocation. Earlier connections must reauthorize for the new write
-   scopes; existing grants must not silently gain permissions.
-3. Use a dedicated reviewer account and sample story, draft, universe and entries.
-   Run the five positive and three negative cases in `plugin.json`, including
-   question-driven creation, upload, replacement conflicts, and cancellation
-   before a save. Verify actual
-   server rejection for inaccessible IDs and read-only or revoked grants.
-   The cases are proposed review scenarios, not recorded ChatGPT test passes.
-4. Confirm privacy disclosures, support contact and publisher identity. Record a
-   walkthrough and supply `review.demo_recording_url` or enter it in the portal.
-   Reviewer credentials belong only in the portal.
-5. A verified publisher uploads the ZIP at <https://platform.openai.com/plugins>,
-   connects **With MCP**, completes domain verification and resolves findings.
-   Host the exact portal challenge only after production-write approval. Submit
-   for review, then publish after OpenAI approval and owner authorization.
+The published SDK `0.3.3` does **not** include `get-story-creation-options` or
+`create-story`. This package pins SDK commit
+`4a677abaeeef9738ccd3dcae2f1f1a1f29ae6ba5`, which includes them. The hosted LU
+app must use that commit or a subsequent release containing those tools; using
+the old npm release makes the configured allowlist fail. Do not substitute the
+release based on its version label alone.
 
-The server gates MCP transport with a discovery-bearing 401. Confirm ChatGPT's
-linking behavior; tool-level reauthorization metadata remains a separate server
-improvement if connection tests require it.
+Before submission:
 
-The generic Agent Plugins 1.0.0 MCP schema currently rejects the per-server
-`extensions` documented by OpenAI. Validate the portable transport fields
-separately and use portal validation for `extensions.com.openai.auth`. A local
-SDK check does not establish store acceptance.
+1. Deploy LU's story-creation API, hosted assistant tools and compatible SDK.
+   Initialize the exact MCP URL, list all 28 tools, and exercise read and draft
+   write calls with a dedicated test account.
+2. Test OAuth linking, refresh, reauthorization and revocation in ChatGPT. Check
+   the five requested scopes and server rejection of inaccessible content,
+   read-only and revoked grants. Existing connections must refresh metadata.
+3. Run the positive and negative cases in `plugin.json`, including both setup
+   paths, chapter ordering, partial uploads and conflicts. These are proposed
+   reviewer scenarios, not recorded ChatGPT passes.
+4. Install the complete package from a local marketplace and test onboarding and
+   bundled skills. Check privacy disclosures and support contact; record a demo.
+   Reviewer credentials belong only in the submission portal.
+5. A verified publisher uploads the ZIP at <https://platform.openai.com/plugins>
+   using **With MCP**, verifies the domain and submits for review. Production
+   challenge hosting and publication require the owner's approval.
+
+The server's unauthenticated 401 advertises OAuth discovery. Validate actual
+ChatGPT linking before submission; tool-level reauthorization metadata remains
+an improvement if the host requires it. The generic Agent Plugins MCP schema
+currently rejects OpenAI's documented per-server `extensions`; use portal
+validation for `extensions.com.openai.auth` rather than stripping authentication.
 
 ## Official references
 
-- [Package format and OAuth configuration](https://developers.openai.com/plugins/build/plugins)
-- [Bundled skills](https://developers.openai.com/plugins/build/skills)
+- [Package format, onboarding and OAuth configuration](https://developers.openai.com/plugins/build/plugins)
+- [Connect and test a plugin](https://developers.openai.com/plugins/deploy/connect-chatgpt)
 - [MCP authentication](https://developers.openai.com/plugins/build/auth)
 - [Submission requirements](https://developers.openai.com/plugins/deploy/submission)
 - [Tool annotation rules](https://developers.openai.com/plugins/plugin-guidelines)
