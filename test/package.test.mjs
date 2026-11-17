@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import test from "node:test";
+import { LiteraryUniverseApiError } from "@literary-universe/sdk";
 import {
 	registerLiteraryUniverseTools,
 	selectTools,
@@ -39,7 +40,7 @@ test("guided authoring tools save drafts without publication or deletion tools",
 		await server.connect(serverSide);
 		await client.connect(clientSide);
 		const { tools } = await client.listTools();
-		assert.equal(tools.length, 26);
+		assert.equal(tools.length, 39);
 		assert.deepEqual(tools.map(({ name }) => name).sort(), selected.toSorted());
 		const writeTools = [
 			"create-story",
@@ -55,8 +56,23 @@ test("guided authoring tools save drafts without publication or deletion tools",
 			"create-universe-translation",
 			"update-universe-translation",
 			"save-series",
+			"create-comic",
+			"update-comic",
+			"create-comic-chapter",
+			"update-comic-chapter",
+			"reorder-comic-chapters",
+			"update-comic-page",
+			"reorder-comic-pages",
+			"create-comic-layer",
+			"update-comic-layer",
 		];
-		const manuscriptWrites = selectTools(["stories-write", "publish"]);
+		const manuscriptWrites = selectTools([
+			"stories-write",
+			"publish",
+			"comics-write",
+			"universes-write",
+			"images",
+		]);
 		assert.ok(
 			manuscriptWrites
 				.filter((name) =>
@@ -65,6 +81,14 @@ test("guided authoring tools save drafts without publication or deletion tools",
 						"set-story-visibility",
 						"publish-chapter",
 						"publish-comic-chapter",
+						"remove-comic-chapter",
+						"remove-comic-page",
+						"remove-comic-layer",
+						"delete-encyclopedia-entry",
+						"set-encyclopedia-entry-publication",
+						"upload-comic-pages",
+						"replace-comic-page-image",
+						"set-cover",
 					].includes(name),
 				)
 				.every((name) => !selected.includes(name)),
@@ -104,6 +128,27 @@ test("guided authoring tools save drafts without publication or deletion tools",
 				calls.push(["series", args]);
 				return { version: args.expectedVersion + 1 };
 			},
+			createComic: async (args) => {
+				calls.push(["create-comic", args]);
+				return { id: "comic-1" };
+			},
+			createComicLayer: async (args) => {
+				calls.push(["create-layer", args]);
+				return { id: "layer-1", ...args };
+			},
+			updateComicLayer: async (args) => {
+				calls.push(["update-layer", args]);
+				return args;
+			},
+			comicPages: async () => [
+				{ id: "secure-page", storageMode: "secure", layers: [] },
+			],
+			comics: async () => {
+				throw new LiteraryUniverseApiError(
+					"FORBIDDEN",
+					"comic:read is required",
+				);
+			},
 		};
 		for (const [name, args] of [
 			["rename-chapter", { id: "c2", language: "en", title: "The Crossing" }],
@@ -134,6 +179,85 @@ test("guided authoring tools save drafts without publication or deletion tools",
 			before,
 			"missing version must not reach the API",
 		);
+		for (const [name, args] of [
+			[
+				"create-comic",
+				{
+					title: "Mira",
+					description: "A journey",
+					format: "manga",
+					license: "cc-by",
+					language: "ja",
+					isAIGenerated: false,
+				},
+			],
+			[
+				"create-comic-layer",
+				{
+					pageId: "page-1",
+					kind: "text",
+					language: "ja",
+					items: [
+						{
+							id: "bubble-1",
+							x: 0.1,
+							y: 0.1,
+							w: 0.2,
+							h: 0.1,
+							text: "Hello",
+							writingMode: "vertical-rl",
+						},
+					],
+				},
+			],
+			[
+				"update-comic-layer",
+				{
+					id: "layer-1",
+					items: [
+						{ id: "bubble-1", x: 0.1, y: 0.1, w: 0.2, h: 0.1, text: "Changed" },
+						{ id: "bubble-2", x: 0.5, y: 0.1, w: 0.2, h: 0.1, text: "Keep me" },
+					],
+				},
+			],
+		]) {
+			const result = await client.callTool({ name, arguments: args });
+			assert.ok(!result.isError, JSON.stringify(result));
+			assert.deepEqual(
+				calls.at(-1)[1],
+				args,
+				"Comic fields and existing layer item IDs must survive dispatch",
+			);
+		}
+		const beforeInvalidLayer = calls.length;
+		const invalidLayer = await client.callTool({
+			name: "create-comic-layer",
+			arguments: {
+				pageId: "page-1",
+				kind: "text",
+				language: "ja",
+				items: [{ x: 2, y: 0, w: 0.2, h: 0.2, text: "Off page" }],
+			},
+		});
+		assert.equal(invalidLayer.isError, true);
+		assert.equal(
+			calls.length,
+			beforeInvalidLayer,
+			"Out-of-range coordinates must not reach the API",
+		);
+		const pages = await client.callTool({
+			name: "list-comic-pages",
+			arguments: { chapterId: "chapter-1" },
+		});
+		assert.deepEqual(pages.structuredContent, {
+			pages: [{ id: "secure-page", storageMode: "secure", layers: [] }],
+		});
+		const denied = await client.callTool({
+			name: "list-comics",
+			arguments: {},
+		});
+		assert.equal(denied.isError, true);
+		assert.match(denied.content[0].text, /FORBIDDEN.*comic:read/);
 		const auth = connection.extensions["com.openai"].auth;
 		assert.equal(connection.type, "streamable-http");
 		assert.equal(endpoint.protocol, "https:");
@@ -141,6 +265,8 @@ test("guided authoring tools save drafts without publication or deletion tools",
 		assert.equal(auth.type, "oauth");
 		assert.equal(auth.client.mode, "dcr");
 		assert.deepEqual(auth.baseScopes.toSorted(), [
+			"comic:read",
+			"comic:write",
 			"story:read",
 			"story:write",
 			"universe:read",
@@ -189,6 +315,7 @@ test("the distribution includes every skill, its onboarding entry and no develop
 		"mcp.json",
 		"plugin.json",
 		"skills/bring-text-to-lu/SKILL.md",
+		"skills/comic-project/SKILL.md",
 		"skills/literary-assistant/SKILL.md",
 		"skills/manage-writing-project/SKILL.md",
 		"skills/setup-writing-project/SKILL.md",

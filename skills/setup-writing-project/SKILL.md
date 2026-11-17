@@ -10,6 +10,10 @@ story, and the goal. Reuse the author's answers and permissions in this chat.
 Explain that LU stores the story, chapters and world-building; a ChatGPT Project
 or a local folder is a workspace for that same work, not a second LU story.
 
+For a comic, manga or webtoon, use the `comic-project` skill instead of the
+story steps below. Comic IDs do not work with story tools or `lu init`; there
+is no comic folder mirror in this plugin.
+
 ## Connect and resolve the project
 
 1. Call `get-identity` to establish the account, deployment, scopes and limits.

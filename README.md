@@ -28,7 +28,7 @@ IDs and working rules for its instructions. It does not claim to create or
 configure ChatGPT Projects itself. Fresh LU reads are authoritative; files
 attached to a chat are not a live synchronized manuscript.
 
-### Local writing folder
+### Local writing folder (prose stories)
 
 Use Node.js 26+ and an agent such as Codex. Install the LU CLI, sign in through
 the browser and initialize the story you selected:
@@ -60,7 +60,7 @@ separate client and has its own tool configuration and granted scopes.
 
 ## Supported actions
 
-The plugin explicitly selects 26 SDK tools and the two hosted assistant tools:
+The plugin explicitly selects 39 SDK tools and the two hosted assistant tools:
 
 - Find stories, chapters, universes, series and encyclopedia entries; inspect
   identity, scopes and limits; search LU help.
@@ -74,13 +74,18 @@ The plugin explicitly selects 26 SDK tools and the two hosted assistant tools:
 - Review writing and encyclopedia consistency using the website assistant's
   current instructions, loaded by `load-writing-skill` and `load-universe-skill`.
 - Propose, create, edit and translate reviewed encyclopedia entries.
+- Create comic, manga and webtoon drafts; edit metadata and chapter structure;
+  arrange existing pages; update alt text and text, sound-effect or encyclopedia
+  hotspot layers. The `comic-project` skill preserves existing layer items and
+  IDs during edits and separates comic IDs from prose story IDs.
 
 The source tool allowlist lives in `mcp.json` and is mirrored in LU's integration
 entry. Categories are not used for SDK tools, so future SDK additions cannot
 silently broaden this plugin. OAuth asks for `story:read`, `story:write`,
-`universe:read`, `universe:write` and `universe:translate`. Reconnect when scopes
-change; an existing grant must not silently gain permissions. Revocation is in
-LU **Settings → Integrations → Connected**.
+`universe:read`, `universe:write`, `universe:translate`, `comic:read` and
+`comic:write`. Existing connections must reconnect to approve the new comic
+scopes, then refresh their tool metadata; grants must not silently gain access.
+Revocation is in LU **Settings → Integrations → Connected**.
 
 Saving drafts does not publish them. Publication, deletion and visibility tools
 are excluded. A request to connect or review is not approval for a save. Source
@@ -89,19 +94,25 @@ remain authoritative, including inaccessible IDs and read-only grants.
 
 ## Current limits
 
-- No new universe, fan-fiction, comic or organization-owned story creation;
-  those start in the LU workshop. No arbitrary account administration.
+- No new universe, fan-fiction or organization-owned story creation; those
+  start in the LU workshop. No arbitrary account administration.
+- Hosted comic tools cannot read local image paths, upload page art or replace
+  images. Use LU workshop for art uploads, then use the plugin for page order,
+  alt text and lettering. Secure pages may have no image URL; the plugin cannot
+  inspect those images or bypass the media gate. Image overlay layers and
+  translation-edition editing remain in the workshop.
+- `lu init` mirrors prose stories only. Comic projects use the hosted comic
+  tools; do not pass a comic ID to the story workspace commands.
 - No unsaved editor selection, live highlighting, persistent proposal/report
   cards or website undo trail. Reviews use saved drafts.
 - AI disclosure and model fields cannot be read or changed by draft-save tools.
   When generated prose requires a disclosure change, the author must save it
-  in LU story settings before the plugin saves
-  the replacement. A confirmation in chat does not update those fields.
+  in LU story settings before the plugin saves the replacement. A confirmation in chat does not update those fields.
 - No LU document-import, DeepL, image generation or image-saving tools. ChatGPT's
   file and generation capabilities are separate from LU's services. Confirm an
   attachment is readable and complete before uploading its text.
-- Drafts, series and universe translations have version checks. Other metadata
-  and encyclopedia edits need a pre-save read; that read cannot eliminate a
+- Prose drafts, series and universe translations have version checks. Comic
+  edits, other metadata and encyclopedia edits need a pre-save read; that read cannot eliminate a
   concurrent edit between reading and saving.
 - No continuous synchronization between ChatGPT attachments and local files.
   LU is the shared source; refresh the local workspace after remote edits.
@@ -114,8 +125,8 @@ npm test
 python3 package.py
 ```
 
-The deterministic ZIP is `dist/literary-universe-0.4.1.zip`. Its allowlist
-contains only the manifests, icon and four skills. Tests exercise real MCP
+The deterministic ZIP is `dist/literary-universe-0.5.0.zip`. Its allowlist
+contains only the manifests, icon and five skills. Tests exercise real MCP
 registration, tool names and annotations, reviewer tool availability, onboarding
 resolution and reproducible package contents. They do not establish ChatGPT
 connection, review or directory acceptance.
@@ -124,24 +135,23 @@ English listing text has Czech and Japanese translations.
 
 ## Deployment and directory submission
 
-The published SDK `0.3.3` does **not** include `get-story-creation-options` or
-`create-story`. This package pins SDK commit
-`4a677abaeeef9738ccd3dcae2f1f1a1f29ae6ba5`, which includes them. The hosted LU
-app must use that commit or a subsequent release containing those tools; using
-the old npm release makes the configured allowlist fail. Do not substitute the
-release based on its version label alone.
+This package tests against the published `@literary-universe/sdk@0.4.0` and
+requires Node.js 26+ for its checks. The hosted LU app must also use SDK 0.4.0 or
+a compatible later version so the exact tool profile can initialize. It includes
+story creation and hosted comic tools; no git dependency is required.
 
 Before submission:
 
 1. Deploy LU's story-creation API, hosted assistant tools and compatible SDK.
-   Initialize the exact MCP URL, list all 28 tools, and exercise read and draft
+   Initialize the exact MCP URL, list all 41 tools, and exercise read and draft
    write calls with a dedicated test account.
 2. Test OAuth linking, refresh, reauthorization and revocation in ChatGPT. Check
-   the five requested scopes and server rejection of inaccessible content,
+   the seven requested scopes and server rejection of inaccessible content,
    read-only and revoked grants. Existing connections must refresh metadata.
 3. Run the positive and negative cases in `plugin.json`, including both setup
-   paths, chapter ordering, partial uploads and conflicts. These are proposed
-   reviewer scenarios, not recorded ChatGPT passes.
+   paths, comic creation, layer preservation, chapter/page ordering, partial
+   uploads and conflicts. These are proposed reviewer scenarios, not recorded
+   ChatGPT passes.
 4. Install the complete package from a local marketplace and test onboarding and
    bundled skills. Check privacy disclosures and support contact; record a demo.
    Reviewer credentials belong only in the submission portal.

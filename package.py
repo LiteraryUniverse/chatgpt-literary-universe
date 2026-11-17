@@ -12,6 +12,7 @@ files = (
     "assets/icon.png",
     "skills/literary-assistant/SKILL.md",
     "skills/bring-text-to-lu/SKILL.md",
+    "skills/comic-project/SKILL.md",
     "skills/setup-writing-project/SKILL.md",
     "skills/manage-writing-project/SKILL.md",
 )
