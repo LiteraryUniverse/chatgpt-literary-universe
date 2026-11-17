@@ -32,6 +32,9 @@ Metadata updates without an atomic revision check need a pre-save read. If the
 reviewed values changed, stop and show the difference; the re-read cannot itself
 eliminate a race. Send only approved fields and preserve unrelated values.
 
+For comics, manga or webtoons use the `comic-project` skill; their IDs and
+chapter/page structure are separate from prose stories.
+
 For prose and draft saves use `bring-text-to-lu`; for writing feedback and
 encyclopedia changes use `literary-assistant`. This plugin does not publish,
 delete, create universes or access arbitrary LU account settings. Explain

@@ -44,9 +44,10 @@ at a time. Explain the choices in the author's language. Collect:
   the model used. Pass the author's answer to both story and chapter creation.
 - Whether it is standalone or belongs to an existing universe. Resolve an
   existing universe with its list/detail tools and confirm placement. Creating
-  new universes, fan fiction, organization-owned works and comics is outside
-  this creation API; offer the LU workshop for those, then resume with a
-  supported destination. Do not silently change the requested work type.
+  new universes, fan fiction and organization-owned works is outside this
+  creation API; offer the LU workshop for those. For comics, manga or webtoons,
+  use the `comic-project` skill and its separate comic tools. Never pass comic
+  IDs to story tools or silently change the requested work type.
 
 Confirm the author owns or has permission to upload the text. Present the
 complete creation summary and proposed chapter plan. Reuse authorization that

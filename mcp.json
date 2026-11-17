@@ -3,7 +3,7 @@
 	"mcpServers": {
 		"literary-universe": {
 			"type": "streamable-http",
-			"url": "https://literaryuniverse.com/mcp?tools=list-stories,get-story,list-chapters,get-chapter-draft,list-universes,get-universe,list-encyclopedia-entries,get-encyclopedia-entry,list-series,get-identity,create-encyclopedia-entry,update-encyclopedia-entry,translate-encyclopedia-entry,search-lu-docs,fetch-lu-docs,get-story-creation-options,create-story,create-chapter,save-chapter-draft,assistant,update-story,rename-chapter,reorder-chapters,update-universe,create-universe-translation,update-universe-translation,save-series",
+			"url": "https://literaryuniverse.com/mcp?tools=list-stories,get-story,list-chapters,get-chapter-draft,list-universes,get-universe,list-encyclopedia-entries,get-encyclopedia-entry,list-series,get-identity,create-encyclopedia-entry,update-encyclopedia-entry,translate-encyclopedia-entry,search-lu-docs,fetch-lu-docs,get-story-creation-options,create-story,create-chapter,save-chapter-draft,assistant,update-story,rename-chapter,reorder-chapters,update-universe,create-universe-translation,update-universe-translation,save-series,list-comics,get-comic,list-comic-chapters,list-comic-pages,create-comic,update-comic,create-comic-chapter,update-comic-chapter,reorder-comic-chapters,update-comic-page,reorder-comic-pages,create-comic-layer,update-comic-layer",
 			"extensions": {
 				"com.openai": {
 					"auth": {
@@ -16,7 +16,9 @@
 							"story:write",
 							"universe:read",
 							"universe:write",
-							"universe:translate"
+							"universe:translate",
+							"comic:read",
+							"comic:write"
 						],
 						"defaultScopes": [],
 						"resource": "https://literaryuniverse.com/mcp"
