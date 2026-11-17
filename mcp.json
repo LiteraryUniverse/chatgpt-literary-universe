@@ -3,7 +3,7 @@
 	"mcpServers": {
 		"literary-universe": {
 			"type": "streamable-http",
-			"url": "https://literaryuniverse.com/mcp?tools=list-stories,get-story,list-chapters,get-chapter-draft,list-universes,get-universe,list-encyclopedia-entries,get-encyclopedia-entry,list-series,get-identity,create-encyclopedia-entry,update-encyclopedia-entry,translate-encyclopedia-entry,search-lu-docs,fetch-lu-docs,get-story-creation-options,create-story,create-chapter,save-chapter-draft,assistant",
+			"url": "https://literaryuniverse.com/mcp?tools=list-stories,get-story,list-chapters,get-chapter-draft,list-universes,get-universe,list-encyclopedia-entries,get-encyclopedia-entry,list-series,get-identity,create-encyclopedia-entry,update-encyclopedia-entry,translate-encyclopedia-entry,search-lu-docs,fetch-lu-docs,get-story-creation-options,create-story,create-chapter,save-chapter-draft,assistant,update-story,rename-chapter,reorder-chapters,update-universe,create-universe-translation,update-universe-translation,save-series",
 			"extensions": {
 				"com.openai": {
 					"auth": {
