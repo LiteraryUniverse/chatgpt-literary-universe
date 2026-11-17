@@ -93,6 +93,10 @@ remain authoritative, including inaccessible IDs and read-only grants.
   those start in the LU workshop. No arbitrary account administration.
 - No unsaved editor selection, live highlighting, persistent proposal/report
   cards or website undo trail. Reviews use saved drafts.
+- AI disclosure and model fields cannot be read or changed by draft-save tools.
+  When generated prose requires a disclosure change, the author must save it
+  in LU story settings before the plugin saves
+  the replacement. A confirmation in chat does not update those fields.
 - No LU document-import, DeepL, image generation or image-saving tools. ChatGPT's
   file and generation capabilities are separate from LU's services. Confirm an
   attachment is readable and complete before uploading its text.
@@ -110,7 +114,7 @@ npm test
 python3 package.py
 ```
 
-The deterministic ZIP is `dist/literary-universe-0.4.0.zip`. Its allowlist
+The deterministic ZIP is `dist/literary-universe-0.4.1.zip`. Its allowlist
 contains only the manifests, icon and four skills. Tests exercise real MCP
 registration, tool names and annotations, reviewer tool availability, onboarding
 resolution and reproducible package contents. They do not establish ChatGPT
